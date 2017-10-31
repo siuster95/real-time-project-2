@@ -15,9 +15,9 @@ const checkCollision = () => {
         console.log('same circle');
       } else if (state === 0) {
         const x = circle2.x - circle.x;
-        const x2 = x ** 2;
+        const x2 = x * x;
         const y = circle2.y - circle.y;
-        const y2 = y ** 2;
+        const y2 = y * y;
         const combined = x2 + y2;
         const result = Math.sqrt(combined);
         if (result < 100) {
@@ -31,9 +31,9 @@ const checkCollision = () => {
         }
       } else if (state === 1) {
         const x = circle2.x - circle.x;
-        const x2 = x ** 2;
+        const x2 = x * x;
         const y = circle2.y - circle.y;
-        const y2 = y ** 2;
+        const y2 = y * y;
         const combined = x2 + y2;
         const result = Math.sqrt(combined);
         if (result < 100) {
