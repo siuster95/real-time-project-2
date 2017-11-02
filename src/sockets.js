@@ -167,6 +167,10 @@ const setupSockets = (ioServer) => {
       }
     });
 
+    socket.on('changeTime', (data) => {
+      io.to(`room${data.roomNumber}`).emit("serverChangetime", {"playerNum":data.playerNum,"seconds":data.seconds,"minutes":data.minutes});
+    });
+
     socket.on('disconnect', () => {
       const Rnd = socket.roomNumber;
       const room = characters[Rnd];

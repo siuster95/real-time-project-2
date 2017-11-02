@@ -17,6 +17,17 @@ let spacebarbool = false;
 let walkImage;
 let play = false;
 let state;
+let lastUpdate;
+let seconds;
+let minutes;
+let playerNum;
+let label1;
+let label2;
+let label3;
+let label4;
+let roomNumber;
+let hasBall;
+
 
 const spriteSize = {
     WIDTH: 100,
@@ -33,12 +44,27 @@ const init = () => {
 
     //connect to socket
     socket = io.connect();
+    //init total time and hasBall
+    hasBall = false;
+    seconds = 0;
+    minutes = 0;
+    //connect the labels 
+    label1 = document.querySelector("#label1");
+    label2 = document.querySelector("#label2");
+    label3 = document.querySelector("#label3");
+    label4 = document.querySelector("#label4");
 
+    label1.innerHTML = "minutes: 0 seconds: 0";
+    label2.innerHTML = "minutes: 0 seconds: 0";
+    label3.innerHTML = "minutes: 0 seconds: 0";
+    label4.innerHTML = "minutes: 0 seconds: 0";
 
     //after connect to socket
     socket.on("Joined", (data) => {
         characters[data.hash] = data;
         hash = data.hash;
+        playerNum = data.charNum;
+        roomNumber = data.roomNumber;
     });
 
     //other users joined
@@ -61,6 +87,26 @@ const init = () => {
         delete characters[data.hashout];
     });
 
+    //when we get update on time
+    socket.on("serverChangetime",(data) => {
+        if(data.playerNum == 1)
+        {
+            label1.innerHTML = `minutes: ${data.minutes} seconds: ${Math.floor(data.seconds)}`;
+        }
+        else if(data.playerNum == 2)
+        {
+            label2.innerHTML = `minutes: ${data.minutes} seconds: ${Math.floor(data.seconds)}`;
+        }
+        else if(data.playerNum == 3)
+        {
+            label3.innerHTML = `minutes: ${data.minutes} seconds: ${Math.floor(data.seconds)}`;
+        }
+        else if(data.playerNum == 4)
+        {
+            label4.innerHTML = `minutes: ${data.minutes} seconds: ${Math.floor(data.seconds)}`;
+        }
+    })
+
     //when enough players join
     socket.on("ballStart",(data)=> {
         play = data.Start;
@@ -82,6 +128,11 @@ const init = () => {
                 if(object.hash == data.circle.hash)
                 {
                     object.hasBall = true;
+                    if(object.hash == hash)
+                    {
+                        lastUpdate = Date.now();
+                        hasBall = true;
+                    }
                 }
             }
             socket.emit("updateFromclient", characters["ball"]);
@@ -97,6 +148,7 @@ const init = () => {
                 let object = characters[keys[i]];
                 object.hasBall = false;
             }
+            hasBall = false;
             socket.emit("updateFromclient", characters["ball"]);
 
         }
@@ -176,6 +228,9 @@ const draw = () => {
             ctx.fill();
             ctx.restore();
         }
+
+        updateTime();
+
         requestAnimationFrame(draw);
     }
     else
@@ -221,7 +276,46 @@ const updatePosition = () => {
 //lerp
 const lerp = (v0, v1, alpha) => {
     return (1 - alpha) * v0 + alpha * v1;
-  };
+};
+
+//check delta time if someone has the ball
+const updateTime = () => {
+    if(hasBall)
+    {
+        let now = Date.now();
+        let dt = now - lastUpdate;
+        lastUpdate = now;
+        let secondsAdded = dt/1000;
+        seconds += secondsAdded;
+        if(seconds >= 60)
+        {
+            minutes += 1;
+            seconds = 0;
+        }
+        updateLabel();
+    }
+};
+
+//update the time labels
+const updateLabel = () => {
+    if(playerNum == 1)
+    {
+        label1.innerHTML = `minutes: ${minutes} seconds: ${Math.floor(seconds)}`;
+    }
+    else if(playerNum == 2)
+    {
+        label2.innerHTML = `minutes: ${minutes} seconds: ${Math.floor(seconds)}`;
+    }
+    else if(playerNum == 3)
+    {
+        label3.innerHTML = `minutes: ${minutes} seconds: ${Math.floor(seconds)}`;
+    }
+    else if(playerNum == 4)
+    {
+        label4.innerHTML = `minutes: ${minutes} seconds: ${Math.floor(seconds)}`;
+    }
+    socket.emit("changeTime",{playerNum,minutes,seconds,roomNumber});
+}
 
 // look for keycodes
 const keydownHandler = (e) =>

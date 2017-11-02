@@ -18,6 +18,16 @@ var spacebarbool = false;
 var walkImage = void 0;
 var play = false;
 var state = void 0;
+var lastUpdate = void 0;
+var seconds = void 0;
+var minutes = void 0;
+var playerNum = void 0;
+var label1 = void 0;
+var label2 = void 0;
+var label3 = void 0;
+var label4 = void 0;
+var roomNumber = void 0;
+var hasBall = void 0;
 
 var spriteSize = {
     WIDTH: 100,
@@ -32,11 +42,27 @@ var init = function init() {
 
     //connect to socket
     socket = io.connect();
+    //init total time and hasBall
+    hasBall = false;
+    seconds = 0;
+    minutes = 0;
+    //connect the labels 
+    label1 = document.querySelector("#label1");
+    label2 = document.querySelector("#label2");
+    label3 = document.querySelector("#label3");
+    label4 = document.querySelector("#label4");
+
+    label1.innerHTML = "minutes: 0 seconds: 0";
+    label2.innerHTML = "minutes: 0 seconds: 0";
+    label3.innerHTML = "minutes: 0 seconds: 0";
+    label4.innerHTML = "minutes: 0 seconds: 0";
 
     //after connect to socket
     socket.on("Joined", function (data) {
         characters[data.hash] = data;
         hash = data.hash;
+        playerNum = data.charNum;
+        roomNumber = data.roomNumber;
     });
 
     //other users joined
@@ -57,6 +83,19 @@ var init = function init() {
         delete characters[data.hashout];
     });
 
+    //when we get update on time
+    socket.on("serverChangetime", function (data) {
+        if (data.playerNum == 1) {
+            label1.innerHTML = "minutes: " + data.minutes + " seconds: " + Math.floor(data.seconds);
+        } else if (data.playerNum == 2) {
+            label2.innerHTML = "minutes: " + data.minutes + " seconds: " + Math.floor(data.seconds);
+        } else if (data.playerNum == 3) {
+            label3.innerHTML = "minutes: " + data.minutes + " seconds: " + Math.floor(data.seconds);
+        } else if (data.playerNum == 4) {
+            label4.innerHTML = "minutes: " + data.minutes + " seconds: " + Math.floor(data.seconds);
+        }
+    });
+
     //when enough players join
     socket.on("ballStart", function (data) {
         play = data.Start;
@@ -75,6 +114,10 @@ var init = function init() {
                 var object = characters[keys[i]];
                 if (object.hash == data.circle.hash) {
                     object.hasBall = true;
+                    if (object.hash == hash) {
+                        lastUpdate = Date.now();
+                        hasBall = true;
+                    }
                 }
             }
             socket.emit("updateFromclient", characters["ball"]);
@@ -87,6 +130,7 @@ var init = function init() {
                 var _object = characters[_keys[_i]];
                 _object.hasBall = false;
             }
+            hasBall = false;
             socket.emit("updateFromclient", characters["ball"]);
         }
     });
@@ -145,6 +189,9 @@ var draw = function draw() {
             ctx.fill();
             ctx.restore();
         }
+
+        updateTime();
+
         requestAnimationFrame(draw);
     } else {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -182,6 +229,36 @@ var updatePosition = function updatePosition() {
 //lerp
 var lerp = function lerp(v0, v1, alpha) {
     return (1 - alpha) * v0 + alpha * v1;
+};
+
+//check delta time if someone has the ball
+var updateTime = function updateTime() {
+    if (hasBall) {
+        var now = Date.now();
+        var dt = now - lastUpdate;
+        lastUpdate = now;
+        var secondsAdded = dt / 1000;
+        seconds += secondsAdded;
+        if (seconds >= 60) {
+            minutes += 1;
+            seconds = 0;
+        }
+        updateLabel();
+    }
+};
+
+//update the time labels
+var updateLabel = function updateLabel() {
+    if (playerNum == 1) {
+        label1.innerHTML = "minutes: " + minutes + " seconds: " + Math.floor(seconds);
+    } else if (playerNum == 2) {
+        label2.innerHTML = "minutes: " + minutes + " seconds: " + Math.floor(seconds);
+    } else if (playerNum == 3) {
+        label3.innerHTML = "minutes: " + minutes + " seconds: " + Math.floor(seconds);
+    } else if (playerNum == 4) {
+        label4.innerHTML = "minutes: " + minutes + " seconds: " + Math.floor(seconds);
+    }
+    socket.emit("changeTime", { playerNum: playerNum, minutes: minutes, seconds: seconds, roomNumber: roomNumber });
 };
 
 // look for keycodes
