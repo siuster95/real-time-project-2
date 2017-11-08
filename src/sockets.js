@@ -348,7 +348,7 @@ const setupSockets = (ioServer) => {
           tempcircle = room[keys[i]];
           pos = phsyics.setcharactersforleft(room);
           delete room[keys[i]];
-          socket.to(`room${Rnd}`).emit('left', { hashout });
+          io.to(`room${Rnd}`).emit('left', { hashout });
         }
       }
       room.PPLinRoom -= 1;

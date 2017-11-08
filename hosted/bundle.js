@@ -257,8 +257,6 @@ var init = function init() {
 
         var holder = characters[data.hashout];
         var playNum = holder.charNum;
-        var element = document.getElementById("label" + playNum);
-        element.parentNode.removeChild(element);
         if (playNum == 1) {
             here1 = false;
         }

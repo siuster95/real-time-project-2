@@ -290,8 +290,6 @@ const init = () => {
 
         let holder = characters[data.hashout];
         let playNum = holder.charNum;
-        let element = document.getElementById(`label${playNum}`);
-        element.parentNode.removeChild(element);
         if(playNum == 1)
         {
             here1 = false;
