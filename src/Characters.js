@@ -8,7 +8,7 @@ class Character {
     this.prevY = 0;
     this.destX = 0;
     this.destY = 0;
-    this.radius = 50;
+    this.radius = 25;
     this.alpha = 0.05;
     this.id = '';
     this.lastUpdate = new Date().getTime();

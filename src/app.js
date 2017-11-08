@@ -15,6 +15,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.resolve(`${__dirname}/../hosted/index.html`));
 });
 
+app.get('/style.css', (req, res) => {
+  res.sendFile(path.resolve(`${__dirname}/../hosted/style.css`));
+});
+
 const server = http.createServer(app);
 
 const io = socketio(server);
