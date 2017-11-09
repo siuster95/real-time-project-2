@@ -14,7 +14,7 @@
 {
     position: absolute;
     top: 30%;
-    left: 1%;
+    left: calc(50% - 650px);
 }
 #BoostCanvas
 {
@@ -25,7 +25,7 @@
 #TimeandWinningDiv
 {
     position: absolute;
-    right:1%;
+    left: calc(50% + 450px);
     top:30%;
 }
 
